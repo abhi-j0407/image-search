@@ -13,10 +13,12 @@ const App = () => {
   const [images, setImages] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   const fetchImages = useCallback(async () => {
     try {
       if (searchInput.current.value) {
+        setLoading(true);
         const { data } = await axios.get(
           `${API_URL}?query=${
             searchInput.current.value
@@ -27,9 +29,11 @@ const App = () => {
         console.log("data", data);
         setImages(data.results);
         setTotalPages(data.total_pages);
+        setLoading(false);
       }
     } catch (error) {
       console.log("Error: ", error);
+      setLoading(false);
     }
   }, [page]);
 
@@ -72,24 +76,30 @@ const App = () => {
           </div>
         ))}
       </div>
-      <div className="images">
-        {images.map((image) => (
-          <img
-            key={image.id}
-            src={image.urls.small}
-            alt={image.alt_description}
-            className="image"
-          />
-        ))}
-      </div>
-      <div className="buttons">
-        {page > 1 && (
-          <Button onClick={() => setPage((prev) => prev - 1)}>Previous</Button>
-        )}
-        {page < totalPages && (
-          <Button onClick={() => setPage((prev) => prev + 1)}>Next</Button>
-        )}
-      </div>
+      {loading ? (
+        <p className="loading">Loading...</p>
+      ) : (
+        <>
+          <div className="images">
+            {images.map((image) => (
+              <img
+                key={image.id}
+                src={image.urls.small}
+                alt={image.alt_description}
+                className="image"
+              />
+            ))}
+          </div>
+          <div className="buttons">
+            {page > 1 && (
+              <Button onClick={() => setPage(page - 1)}>Previous</Button>
+            )}
+            {page < totalPages && (
+              <Button onClick={() => setPage(page + 1)}>Next</Button>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 };
